@@ -5,6 +5,7 @@ const database = require("./database")
 const PORT = 3000;
 
 const app = express();
+app.use(express.json());
 
 /* 
 Route           /
@@ -156,6 +157,154 @@ app.get("/publications/book/:isbn", (req, res) => {
     }
 
     return res.json({ publications: getSpecificPublication });
+})
+
+/*
+Route           /book/new
+Description     add new book
+Access          PUBLIC
+Parameters      none
+Method          POST
+*/
+app.post("/book/new", (req, res) => {
+    const { newBook } = req.body;
+
+    database.books.push(newBook);
+
+    return res.json({ books: database.books });
+})
+
+/*
+Route           /author/new
+Description     add new author
+Access          PUBLIC
+Parameters      none
+Method          POST
+*/
+app.post("/author/new", (req, res) => {
+    const { newAuthor } = req.body;
+
+    database.authors.push(newAuthor);
+
+    return res.json({ authors: database.authors });
+})
+
+/*
+Route           /publication/new
+Description     add new publication
+Access          PUBLIC
+Parameters      none
+Method          POST
+*/
+app.post("/publication/new", (req, res) => {
+    const { newPublication } = req.body;
+
+    database.publications.push(newPublication);
+
+    return res.json({ publications: database.publications });
+})
+
+/*
+Route           /book/update/title
+Description     update book title
+Access          PUBLIC
+Parameters      isbn
+Method          PUT
+*/
+app.put("/book/update/title/:isbn", (req, res) => {
+    database.books.forEach((book) => {
+        if (book.ISBN === req.params.isbn) {
+            book.title = req.body.newBookTitle;
+            return;
+        }
+    });
+
+    return res.json({ books: database.books });
+})
+
+/*
+Route           /book/update/author
+Description     Update/Add new author for a book
+Access          PUBLIC
+Parameters      isbn, authorId
+Method          PUT
+*/
+app.put("/book/update/author/:isbn/:authorId", (req, res) => {
+    // update book database
+    database.books.forEach((book) => {
+        if (book.ISBN === req.params.isbn) {
+            return book.author.push(parseInt(req.params.authorId));
+        }
+    })
+
+    // update author database
+    database.authors.forEach((author) => {
+        if (author.id === parseInt(req.params.authorId)) return author.books.push(req.params.isbn);
+    });
+
+    return res.json({ books: database.books, authors: database.authors });
+});
+
+/*
+Route           /author/update/name
+Description     Update author name
+Access          PUBLIC
+Parameters      authorId
+Method          PUT
+*/
+app.put("/author/update/name/:authorId", (req, res) => {
+    database.authors.forEach((author) => {
+        if (author.id === parseInt(req.params.authorId)) {
+            author.name = req.body.newAuthorName;
+            return;
+        }
+    });
+
+    return res.json({ authors: database.authors });
+})
+
+/*
+Route           /publication/update/name
+Description     Update publication name
+Access          PUBLIC
+Parameters      pubId
+Method          PUT
+*/
+app.put("/publication/update/name/:pubId", (req, res) => {
+    database.publications.forEach((publication) => {
+        if (publication.id === parseInt(req.params.pubId)) {
+            publication.name = req.body.newPublicationName;
+            return;
+        }
+    });
+
+    return res.json({ publications: database.publications });
+});
+
+/*
+Route           /publication/update/book
+Description     update/add new book to publication
+Access          PUBLIC
+Parameters      isbn
+Method          PUT
+*/
+app.put("/publication/update/book/:isbn", (req, res) => {
+    // update the publication database
+    database.publications.forEach((publication) => {
+        if (publication.id === req.body.pubId) {
+            return publication.books.push(req.params.isbn);
+        }
+    })
+
+    // update the book database
+    database.books.forEach((book) => {
+        if (book.ISBN === req.params.isbn) {
+            book.publication = req.body.pubId;
+            return;
+        }
+    });
+
+    return res.json({ books: database.books, publications: database.publications });
 })
 
 app.listen(PORT, () => {
