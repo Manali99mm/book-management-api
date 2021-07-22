@@ -30,8 +30,8 @@
 // Update/Add new author for a book ✔✔
 
 // DELETE
-// delete a book ✔
-// delete an author from a book ✔
+// delete a book ✔✔
+// delete an author from a book ✔✔
 
 // Authors
 // We need an api
@@ -48,7 +48,7 @@
 // Update author name ✔✔
 
 // DELETE
-// delete an author ✔
+// delete an author ✔✔
 
 // Publications
 // We need an api
@@ -66,5 +66,5 @@
 // update/add new book to publication ✔✔
 
 // DELETE
-// delete a publication ✔
-// delete a book from publication ✔
+// delete a publication ✔✔
+// delete a book from publication ✔✔
