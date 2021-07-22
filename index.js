@@ -3,7 +3,13 @@ require("dotenv").config();
 const express = require('express');
 const mongoose = require("mongoose");
 
-const database = require("./database")
+// Database
+const database = require("./database/database");
+
+// Models
+const BookModels = require("./database/book");
+const AuthorModels = require("./database/author");
+const PublicationModels = require("./database/publication");
 
 const PORT = 3000;
 
