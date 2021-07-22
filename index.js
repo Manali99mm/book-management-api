@@ -7,9 +7,9 @@ const mongoose = require("mongoose");
 const database = require("./database/database");
 
 // Models
-const BookModels = require("./database/book");
-const AuthorModels = require("./database/author");
-const PublicationModels = require("./database/publication");
+const BookModel = require("./database/book");
+const AuthorModel = require("./database/author");
+const PublicationModel = require("./database/publication");
 
 const PORT = 3000;
 
@@ -31,8 +31,9 @@ Access          PUBLIC
 Parameters      None
 Method          GET
 */
-app.get("/", (req, res) => {
-    return res.json({ books: database.books });
+app.get("/", async (req, res) => {
+    const getAllBooks = await BookModel.find();
+    return res.json(getAllBooks);
 })
 
 /*
@@ -42,10 +43,10 @@ Access          PUBLIC
 Parameters      isbn
 Method          GET
 */
-app.get("/isbn/:isbn", (req, res) => {
-    const getSpecificBook = database.books.filter((book) => book.ISBN === req.params.isbn);
+app.get("/isbn/:isbn", async (req, res) => {
+    const getSpecificBook = await BookModel.findOne({ ISBN: req.params.isbn });
 
-    if (getSpecificBook.length === 0) {
+    if (!getSpecificBook) {
         return res.json({ error: `No book found with the ISBN of ${req.params.isbn}` });
     }
 
@@ -59,14 +60,14 @@ Access          PUBLIC
 Parameters      category
 Method          GET
 */
-app.get("/c/:category", (req, res) => {
-    const getSpecificBook = database.books.filter(book => book.category.includes(req.params.category));
+app.get("/c/:category", async (req, res) => {
+    const getSpecificBooks = await BookModel.find({ category: req.params.category });
 
-    if (getSpecificBook.length === 0) {
+    if (!getSpecificBooks) {
         return res.json({ error: `No book found for the category of ${req.params.category}` });
     }
 
-    return res.json({ book: getSpecificBook });
+    return res.json({ book: getSpecificBooks });
 })
 
 /*
@@ -76,14 +77,14 @@ Access          PUBLIC
 Parameters      language
 Method          GET
 */
-app.get("/lang/:language", (req, res) => {
-    const getSpecificBook = database.books.filter((book) => book.language === req.params.language);
+app.get("/lang/:language", async (req, res) => {
+    const getSpecificBooks = await BookModel.find({ language: req.params.language });
 
-    if (getSpecificBook.length === 0) {
+    if (!getSpecificBooks) {
         return res.json({ error: `No book found for the language ${req.params.language}` });
     }
 
-    return res.json({ book: getSpecificBook });
+    return res.json({ books: getSpecificBooks });
 });
 
 /*
@@ -93,8 +94,9 @@ Access          PUBLIC
 Parameters      none
 Method          GET
 */
-app.get("/author", (req, res) => {
-    return res.json({ authors: database.authors });
+app.get("/author", async (req, res) => {
+    const getAllAuthors = await AuthorModel.find();
+    return res.json({ authors: getAllAuthors });
 })
 
 /*
@@ -104,10 +106,10 @@ Access          PUBLIC
 Parameters      id
 Method          GET
 */
-app.get("/author/:id", (req, res) => {
-    const getSpecificAuthor = database.authors.filter((author) => author.id === parseInt(req.params.id));
+app.get("/author/:id", async (req, res) => {
+    const getSpecificAuthor = await AuthorModel.findOne({ id: parseInt(req.params.id) });
 
-    if (getSpecificAuthor.length === 0) {
+    if (!getSpecificAuthor) {
         return res.json({ error: `No author found for the id of ${req.params.id}` });
     }
 
@@ -121,10 +123,10 @@ Access          PUBLIC
 Parameters      isbn
 Method          GET
 */
-app.get("/author/book/:isbn", (req, res) => {
-    const getSpecificAuthor = database.authors.filter((author) => author.books.includes(req.params.isbn));
+app.get("/author/book/:isbn", async (req, res) => {
+    const getSpecificAuthor = await AuthorModel.find({ books: req.params.isbn });
 
-    if (getSpecificAuthor.length === 0) {
+    if (!getSpecificAuthor) {
         return res.json({ error: `No author found for the book of ${req.params.isbn}` });
     }
 
@@ -138,8 +140,9 @@ Access          PUBLIC
 Parameters      none
 Method          GET
 */
-app.get("/publications", (req, res) => {
-    return res.json({ publications: database.publications });
+app.get("/publications", async (req, res) => {
+    const getAllPublications = await PublicationModel.find();
+    return res.json({ publications: getAllPublications });
 })
 
 /*
@@ -149,10 +152,10 @@ Access          PUBLIC
 Parameters      id
 Method          GET
 */
-app.get("/publications/:id", (req, res) => {
-    const getSpecificPublication = database.publications.filter((publication) => publication.id === parseInt(req.params.id));
+app.get("/publications/:id", async (req, res) => {
+    const getSpecificPublication = await PublicationModel.findOne({ id: parseInt(req.params.id) });
 
-    if (getSpecificPublication.length === 0) {
+    if (!getSpecificPublication) {
         return res.json({ error: `No publication found for the id of ${req.params.id}` });
     }
 
@@ -166,10 +169,10 @@ Access          PUBLIC
 Parameters      isbn
 Method          GET
 */
-app.get("/publications/book/:isbn", (req, res) => {
-    const getSpecificPublication = database.publications.filter((publication) => publication.books.includes(req.params.isbn));
+app.get("/publications/book/:isbn", async (req, res) => {
+    const getSpecificPublication = await PublicationModel.findOne({ books: req.params.isbn });
 
-    if (getSpecificPublication.length === 0) {
+    if (!getSpecificPublication) {
         return res.json({ error: `No publication found for the book of ${req.params.isbn}` });
     }
 
@@ -183,12 +186,12 @@ Access          PUBLIC
 Parameters      none
 Method          POST
 */
-app.post("/book/new", (req, res) => {
+app.post("/book/new", async (req, res) => {
     const { newBook } = req.body;
 
-    database.books.push(newBook);
+    BookModel.create(newBook);
 
-    return res.json({ books: database.books });
+    return res.json({ message: "book was added!" });
 })
 
 /*
@@ -201,9 +204,9 @@ Method          POST
 app.post("/author/new", (req, res) => {
     const { newAuthor } = req.body;
 
-    database.authors.push(newAuthor);
+    AuthorModel.create(newAuthor);
 
-    return res.json({ authors: database.authors });
+    return res.json({ message: "author was added!" });
 })
 
 /*
@@ -216,9 +219,9 @@ Method          POST
 app.post("/publication/new", (req, res) => {
     const { newPublication } = req.body;
 
-    database.publications.push(newPublication);
+    PublicationModel.create(newPublication);
 
-    return res.json({ publications: database.publications });
+    return res.json({ message: "publication was added!" });
 })
 
 /*
