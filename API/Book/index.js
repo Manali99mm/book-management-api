@@ -12,8 +12,12 @@ Parameters      None
 Method          GET
 */
 Router.get("/", async (req, res) => {
-    const getAllBooks = await BookModel.find();
-    return res.json(getAllBooks);
+    try {
+        const getAllBooks = await BookModel.find();
+        return res.json(getAllBooks);
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
 })
 
 /*
@@ -24,13 +28,17 @@ Parameters      isbn
 Method          GET
 */
 Router.get("/isbn/:isbn", async (req, res) => {
-    const getSpecificBook = await BookModel.findOne({ ISBN: req.params.isbn });
+    try {
+        const getSpecificBook = await BookModel.findOne({ ISBN: req.params.isbn });
 
-    if (!getSpecificBook) {
-        return res.json({ error: `No book found with the ISBN of ${req.params.isbn}` });
+        if (!getSpecificBook) {
+            return res.json({ error: `No book found with the ISBN of ${req.params.isbn}` });
+        }
+
+        return res.json({ book: getSpecificBook });
+    } catch (error) {
+        return res.json({ error: error.message });
     }
-
-    return res.json({ book: getSpecificBook });
 })
 
 /*
@@ -41,13 +49,17 @@ Parameters      category
 Method          GET
 */
 Router.get("/c/:category", async (req, res) => {
-    const getSpecificBooks = await BookModel.find({ category: req.params.category });
+    try {
+        const getSpecificBooks = await BookModel.find({ category: req.params.category });
 
-    if (!getSpecificBooks) {
-        return res.json({ error: `No book found for the category of ${req.params.category}` });
+        if (!getSpecificBooks) {
+            return res.json({ error: `No book found for the category of ${req.params.category}` });
+        }
+
+        return res.json({ book: getSpecificBooks });
+    } catch (error) {
+        return res.json({ error: error.message });
     }
-
-    return res.json({ book: getSpecificBooks });
 })
 
 /*
@@ -58,13 +70,17 @@ Parameters      language
 Method          GET
 */
 Router.get("/lang/:language", async (req, res) => {
-    const getSpecificBooks = await BookModel.find({ language: req.params.language });
+    try {
+        const getSpecificBooks = await BookModel.find({ language: req.params.language });
 
-    if (!getSpecificBooks) {
-        return res.json({ error: `No book found for the language ${req.params.language}` });
+        if (!getSpecificBooks) {
+            return res.json({ error: `No book found for the language ${req.params.language}` });
+        }
+
+        return res.json({ books: getSpecificBooks });
+    } catch (error) {
+        return res.json({ error: error.message });
     }
-
-    return res.json({ books: getSpecificBooks });
 });
 
 /*
@@ -75,11 +91,15 @@ Parameters      none
 Method          POST
 */
 Router.post("/new", async (req, res) => {
-    const { newBook } = req.body;
+    try {
+        const { newBook } = req.body;
 
-    BookModel.create(newBook);
+        await BookModel.create(newBook);
 
-    return res.json({ message: "book was added!" });
+        return res.json({ message: "book was added!" });
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
 })
 
 /*
@@ -90,19 +110,23 @@ Parameters      isbn
 Method          PUT
 */
 Router.put("/update/title/:isbn", async (req, res) => {
-    const updatedBook = await BookModel.findOneAndUpdate(
-        {
-            ISBN: req.params.isbn
-        },
-        {
-            title: req.body.bookTitle
-        },
-        {
-            new: true
-        }
-    )
+    try {
+        const updatedBook = await BookModel.findOneAndUpdate(
+            {
+                ISBN: req.params.isbn
+            },
+            {
+                title: req.body.bookTitle
+            },
+            {
+                new: true
+            }
+        )
 
-    return res.json({ book: updatedBook });
+        return res.json({ book: updatedBook });
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
 })
 
 /*
@@ -113,35 +137,39 @@ Parameters      isbn, authorId
 Method          PUT
 */
 Router.put("/update/author/:isbn/:authorId", async (req, res) => {
-    // update book database
-    const updatedBook = await BookModel.findOneAndUpdate(
-        {
-            ISBN: req.params.isbn
-        },
-        {
-            $addToSet: {
-                authors: req.params.authorId
+    try {
+        // update book database
+        const updatedBook = await BookModel.findOneAndUpdate(
+            {
+                ISBN: req.params.isbn
+            },
+            {
+                $addToSet: {
+                    authors: req.params.authorId
+                }
+            },
+            {
+                new: true
             }
-        },
-        {
-            new: true
-        }
-    )
+        )
 
-    // update author database
-    const updatedAuthor = await AuthorModel.findOneAndUpdate(
-        {
-            id: req.params.authorId
-        },
-        {
-            $addToSet: {
-                books: req.params.isbn
-            }
-        },
-        { new: true }
-    )
+        // update author database
+        const updatedAuthor = await AuthorModel.findOneAndUpdate(
+            {
+                id: req.params.authorId
+            },
+            {
+                $addToSet: {
+                    books: req.params.isbn
+                }
+            },
+            { new: true }
+        )
 
-    return res.json({ book: updatedBook, author: updatedAuthor, message: "new author was added" });
+        return res.json({ book: updatedBook, author: updatedAuthor, message: "new author was added" });
+    } catch (error) {
+        return res.json({ error: error.message })
+    }
 });
 
 /*
@@ -152,11 +180,15 @@ Parameters      isbn
 Method          DELETE
 */
 Router.delete("/delete/:isbn", async (req, res) => {
-    const deletedBook = await BookModel.findOneAndDelete({
-        ISBN: req.params.isbn
-    })
+    try {
+        const deletedBook = await BookModel.findOneAndDelete({
+            ISBN: req.params.isbn
+        })
 
-    return res.json({ message: "book was deleted!!", book: deletedBook });
+        return res.json({ message: "book was deleted!!", book: deletedBook });
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
 })
 
 /*
@@ -167,37 +199,41 @@ Parameters      isbn, authorId
 Method          DELETE
 */
 Router.delete("/delete/author/:isbn/:authorId", async (req, res) => {
-    // update a book database
-    const updatedBookDatabase = await BookModel.findOneAndUpdate(
-        {
-            ISBN: req.params.isbn
-        },
-        {
-            $pull: {
-                authors: parseInt(req.params.authorId)
-            }
-        },
-        { new: true }
-    )
+    try {
+        // update the book database
+        const updatedBookDatabase = await BookModel.findOneAndUpdate(
+            {
+                ISBN: req.params.isbn
+            },
+            {
+                $pull: {
+                    authors: parseInt(req.params.authorId)
+                }
+            },
+            { new: true }
+        )
 
-    // update the author database
-    const updatedAuthorDatabase = await AuthorModel.findOneAndUpdate(
-        {
-            id: parseInt(req.params.authorId)
-        },
-        {
-            $pull: {
-                books: req.params.isbn
-            }
-        },
-        { new: true }
-    )
+        // update the author database
+        const updatedAuthorDatabase = await AuthorModel.findOneAndUpdate(
+            {
+                id: parseInt(req.params.authorId)
+            },
+            {
+                $pull: {
+                    books: req.params.isbn
+                }
+            },
+            { new: true }
+        )
 
-    return res.json({
-        message: "author was deleted",
-        books: updatedBookDatabase,
-        authors: updatedAuthorDatabase
-    });
+        return res.json({
+            message: "author was deleted",
+            books: updatedBookDatabase,
+            authors: updatedAuthorDatabase
+        });
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
 })
 
 module.exports = Router;

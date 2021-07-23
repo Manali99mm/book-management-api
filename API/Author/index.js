@@ -12,8 +12,12 @@ Parameters      none
 Method          GET
 */
 Router.get("/", async (req, res) => {
-    const getAllAuthors = await AuthorModel.find();
-    return res.json({ authors: getAllAuthors });
+    try {
+        const getAllAuthors = await AuthorModel.find();
+        return res.json({ authors: getAllAuthors });
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
 })
 
 /*
@@ -24,13 +28,17 @@ Parameters      id
 Method          GET
 */
 Router.get("/:id", async (req, res) => {
-    const getSpecificAuthor = await AuthorModel.findOne({ id: parseInt(req.params.id) });
+    try {
+        const getSpecificAuthor = await AuthorModel.findOne({ id: parseInt(req.params.id) });
 
-    if (!getSpecificAuthor) {
-        return res.json({ error: `No author found for the id of ${req.params.id}` });
+        if (!getSpecificAuthor) {
+            return res.json({ error: `No author found for the id of ${req.params.id}` });
+        }
+
+        return res.json({ author: getSpecificAuthor });
+    } catch (error) {
+        return res.json({ error: error.message });
     }
-
-    return res.json({ author: getSpecificAuthor });
 })
 
 /*
@@ -41,13 +49,17 @@ Parameters      isbn
 Method          GET
 */
 Router.get("/book/:isbn", async (req, res) => {
-    const getSpecificAuthor = await AuthorModel.find({ books: req.params.isbn });
+    try {
+        const getSpecificAuthor = await AuthorModel.find({ books: req.params.isbn });
 
-    if (!getSpecificAuthor) {
-        return res.json({ error: `No author found for the book of ${req.params.isbn}` });
+        if (!getSpecificAuthor) {
+            return res.json({ error: `No author found for the book of ${req.params.isbn}` });
+        }
+
+        return res.json({ authors: getSpecificAuthor });
+    } catch (error) {
+        return res.json({ error: error.message });
     }
-
-    return res.json({ authors: getSpecificAuthor });
 })
 
 /*
@@ -57,12 +69,17 @@ Access          PUBLIC
 Parameters      none
 Method          POST
 */
-Router.post("/new", (req, res) => {
-    const { newAuthor } = req.body;
+Router.post("/new", async (req, res) => {
+    try {
+        const { newAuthor } = req.body;
 
-    AuthorModel.create(newAuthor);
+        await AuthorModel.create(newAuthor);
 
-    return res.json({ message: "author was added!" });
+        return res.json({ message: "author was added!" });
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
+
 })
 
 /*
@@ -73,19 +90,23 @@ Parameters      authorId
 Method          PUT
 */
 Router.put("/update/name/:authorId", async (req, res) => {
-    const updatedAuthor = await AuthorModel.findOneAndUpdate(
-        {
-            id: parseInt(req.params.authorId)
-        },
-        {
-            name: req.body.newAuthorName
-        },
-        {
-            new: true
-        }
-    )
+    try {
+        const updatedAuthor = await AuthorModel.findOneAndUpdate(
+            {
+                id: parseInt(req.params.authorId)
+            },
+            {
+                name: req.body.newAuthorName
+            },
+            {
+                new: true
+            }
+        )
 
-    return res.json({ author: updatedAuthor });
+        return res.json({ author: updatedAuthor });
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
 })
 
 /*
@@ -96,14 +117,18 @@ Parameters      authorId
 Method          DELETE
 */
 Router.delete("/delete/:authorId", async (req, res) => {
-    const deletedAuthor = await AuthorModel.findOneAndDelete({
-        id: req.params.authorId
-    })
+    try {
+        const deletedAuthor = await AuthorModel.findOneAndDelete({
+            id: req.params.authorId
+        })
 
-    return res.json({
-        message: "author was deleted!",
-        author: deletedAuthor
-    });
+        return res.json({
+            message: "author was deleted!",
+            author: deletedAuthor
+        });
+    } catch (error) {
+        return res.json({ error: error.message });
+    }
 });
 
 
